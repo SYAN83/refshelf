@@ -1,0 +1,14 @@
+# HTTPS front end for RefShelf on the local network (see README "Access from other devices").
+# Caddy gets a Let's Encrypt certificate through Cloudflare's DNS API, so the app
+# never has to be reachable from the internet. RefShelf itself stays on 127.0.0.1.
+#
+# Needs in .env:  REFSHELF_DOMAIN=refshelf.example.com
+#                 CLOUDFLARE_API_TOKEN=...   (Zone:DNS:Edit for that domain)
+# Run:            npm run proxy
+
+{$REFSHELF_DOMAIN} {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+	reverse_proxy 127.0.0.1:{$PORT:4747}
+}

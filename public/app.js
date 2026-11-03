@@ -232,7 +232,7 @@ function renderPdfTab(ref) {
   const panel = $('[data-panel="pdf"]');
   panel.innerHTML = ref.has_pdf
     ? `<iframe class="pdf-frame" src="/api/refs/${ref.id}/pdf" title="PDF preview"></iframe>`
-    : `<div class="notice">No PDF attached yet. Bibliotek can look for an open-access copy, or you can attach one you downloaded yourself.
+    : `<div class="notice">No PDF attached yet. RefShelf can look for an open-access copy, or you can attach one you downloaded yourself.
          <div class="actions"><button data-act="find-pdf" data-busy="Searching…">Find PDF</button>
          <label class="button">Attach PDF<input type="file" accept="application/pdf" data-act="attach-pdf" hidden /></label></div></div>`;
 }
@@ -353,7 +353,7 @@ $("#detail").addEventListener("change", async (e) => {
 
 async function loadAccount() {
   const me = await api("/api/me");
-  if (!me) return; // running with BIBLIOTEK_NO_AUTH=1
+  if (!me) return; // running with REFSHELF_NO_AUTH=1
   $("#account-name").textContent = me.name;
   $("#account").title = me.email;
   if (me.picture) Object.assign($("#account-avatar"), { src: me.picture, hidden: false });

@@ -1,12 +1,13 @@
 {
-  "name": "bibliotek",
+  "name": "refshelf",
   "version": "0.1.0",
   "private": true,
   "description": "Local reference manager: import papers, preview PDFs, AI summaries, BibTeX/APA/MLA export",
   "type": "module",
   "scripts": {
     "start": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env server.js",
-    "dev": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env --watch server.js"
+    "dev": "node --disable-warning=ExperimentalWarning --env-file-if-exists=.env --watch server.js",
+    "proxy": "caddy run --config Caddyfile --adapter caddyfile --envfile .env"
   },
   "engines": {
     "node": ">=22.13"

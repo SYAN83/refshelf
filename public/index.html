@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bibliotek</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Bibliotek</div>
+    <form id="import-form" class="import">
+      <input id="import-input" type="text" placeholder="Paste a DOI, arXiv ID, or URL…" autocomplete="off" />
+      <button type="submit" class="primary" id="import-btn">Import</button>
+      <label class="button">
+        Upload PDF
+        <input id="upload-input" type="file" accept="application/pdf" multiple hidden />
+      </label>
+    </form>
+    <div id="account" class="account" hidden>
+      <img id="account-avatar" alt="" referrerpolicy="no-referrer" hidden />
+      <span id="account-name"></span>
+      <button id="logout-btn">Sign out</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-tools">
+        <input id="search" type="search" placeholder="Search title, author, tag…" />
+      </div>
+      <div class="selection-bar">
+        <label><input type="checkbox" id="select-all" /> <span id="count">0 references</span></label>
+        <div class="export">
+          <select id="export-format" aria-label="Export format">
+            <option value="bibtex">BibTeX</option>
+            <option value="ris">RIS</option>
+            <option value="apa">APA</option>
+            <option value="mla">MLA</option>
+          </select>
+          <button id="export-btn" title="Export the checked references, or all if none are checked">Export</button>
+        </div>
+      </div>
+      <ul id="ref-list" class="ref-list"></ul>
+    </aside>
+
+    <main id="detail" class="detail">
+      <div class="empty">
+        <h2>Your library</h2>
+        <p>Import a paper by pasting a DOI (<code>10.1038/nature14539</code>), an arXiv ID (<code>1706.03762</code>), or a URL. Or drop PDFs anywhere on this window.</p>
+      </div>
+    </main>
+  </div>
+
+  <div id="drop-overlay" class="drop-overlay" hidden>Drop PDFs to import</div>
+  <div id="toast" class="toast" hidden></div>
+
+  <template id="detail-tpl">
+    <div class="detail-head">
+      <h1 class="ref-title"></h1>
+      <p class="ref-byline"></p>
+      <div class="actions">
+        <a class="button" data-act="open-pdf" target="_blank">Open PDF</a>
+        <a class="button" data-act="download-pdf">Download PDF</a>
+        <button data-act="find-pdf">Find PDF</button>
+        <label class="button">Attach PDF<input type="file" accept="application/pdf" data-act="attach-pdf" hidden /></label>
+        <button class="danger" data-act="delete">Delete</button>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="pdf">PDF</button>
+      <button role="tab" data-tab="summary">Summary</button>
+      <button role="tab" data-tab="cite">Cite</button>
+      <button role="tab" data-tab="info">Details</button>
+    </nav>
+    <section class="tab" data-panel="pdf"></section>
+    <section class="tab" data-panel="summary"></section>
+    <section class="tab" data-panel="cite"></section>
+    <section class="tab" data-panel="info">
+      <form class="info-form">
+        <label class="wide">Title<input name="title" /></label>
+        <label class="wide">Authors <small>(one per line: Family, Given)</small><textarea name="authors" rows="4"></textarea></label>
+        <label>Type
+          <select name="type">
+            <option value="article">Journal article</option>
+            <option value="inproceedings">Conference paper</option>
+            <option value="incollection">Book chapter</option>
+            <option value="book">Book</option>
+            <option value="techreport">Report</option>
+            <option value="phdthesis">Thesis</option>
+            <option value="misc">Other / preprint</option>
+          </select>
+        </label>
+        <label>Year<input name="year" inputmode="numeric" /></label>
+        <label class="wide">Journal / venue<input name="venue" /></label>
+        <label>Volume<input name="volume" /></label>
+        <label>Issue<input name="issue" /></label>
+        <label>Pages<input name="pages" /></label>
+        <label>Publisher<input name="publisher" /></label>
+        <label>DOI<input name="doi" /></label>
+        <label>Cite key<input name="cite_key" /></label>
+        <label class="wide">URL<input name="url" /></label>
+        <label class="wide">Tags <small>(comma separated)</small><input name="tags" /></label>
+        <label class="wide">Abstract<textarea name="abstract" rows="6"></textarea></label>
+        <label class="wide">Notes<textarea name="notes" rows="5"></textarea></label>
+        <div class="wide form-actions"><button type="submit" class="primary">Save changes</button></div>
+      </form>
+    </section>
+  </template>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

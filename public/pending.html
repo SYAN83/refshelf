@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Waiting for approval · RefShelf</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="login-page">
+  <main class="login-card">
+    <div class="brand">RefShelf</div>
+    <h1 class="card-title">Request sent</h1>
+    <p>An admin needs to approve <strong id="pending-email">your account</strong> before you can open your library.
+      This page will continue automatically once you're approved.</p>
+    <button id="pending-logout" class="wide-btn">Sign out</button>
+  </main>
+  <script>
+    async function check() {
+      const res = await fetch("/api/me").catch(() => null);
+      if (!res) return;
+      if (res.status === 401) return void (location.href = "/login.html");
+      const me = await res.json().catch(() => null);
+      if (!me) return void (location.href = "/");
+      if (me.status === "approved") return void (location.href = "/");
+      document.getElementById("pending-email").textContent = me.email;
+    }
+    check();
+    setInterval(check, 15000);
+    document.getElementById("pending-logout").addEventListener("click", async () => {
+      await fetch("/auth/logout", { method: "POST" });
+      location.href = "/login.html";
+    });
+  </script>
+</body>
+</html>

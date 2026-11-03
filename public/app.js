@@ -15,6 +15,13 @@ async function api(url, opts = {}) {
     location.href = "/login.html";
     throw new Error("Signed out");
   }
+  if (res.status === 403 && url.startsWith("/api/") && !url.startsWith("/api/admin/")) {
+    const data = await res.clone().json().catch(() => ({}));
+    if (data.pending) {
+      location.href = "/pending.html";
+      throw new Error("Waiting for approval");
+    }
+  }
   if (res.status === 204) return null;
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error ?? `${res.status} ${res.statusText}`);
@@ -358,6 +365,19 @@ async function loadAccount() {
   $("#account").title = me.email;
   if (me.picture) Object.assign($("#account-avatar"), { src: me.picture, hidden: false });
   $("#account").hidden = false;
+  if (me.isAdmin) {
+    $("#admin-link").hidden = false;
+    refreshPendingCount();
+    setInterval(refreshPendingCount, 60000);
+  }
+}
+
+async function refreshPendingCount() {
+  const { count } = await api("/api/admin/pending-count").catch(() => ({ count: 0 }));
+  const el = $("#pending-count");
+  el.textContent = count;
+  el.hidden = !count;
+  $("#admin-link").title = count ? `${count} access request${count === 1 ? "" : "s"} waiting` : "Manage users";
 }
 
 $("#logout-btn").addEventListener("click", async () => {

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Users · RefShelf</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">RefShelf</a>
+    <a class="button" href="/">← Back to library</a>
+  </header>
+
+  <main class="admin">
+    <h1>Users</h1>
+    <p class="admin-intro">Anyone who signs in with Google sends an access request. Approved users each get their own private library.
+      Declining someone, or revoking an approved user, signs them out right away; their references are kept.</p>
+    <div id="user-sections"><p class="admin-intro">Loading…</p></div>
+  </main>
+
+  <div id="toast" class="toast" hidden></div>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

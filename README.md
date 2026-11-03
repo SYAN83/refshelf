@@ -13,37 +13,50 @@ npm start                                # → http://localhost:4747
 
 Requires Node 22.13+ (it uses the built-in `node:sqlite`).
 
-## Google sign-in
+## Google sign-in and sign-up
 
-The app is gated behind Google sign-in: only the accounts in `ALLOWED_EMAILS` can open the library.
+The app is gated behind Google sign-in. Anyone with a Google account can **request access** by signing in; the request waits on a "waiting for approval" page until an admin approves it. Admins are the accounts in `ADMIN_EMAILS`: they're always approved, and they review requests on the **Users** page (`/admin.html`, linked in the top bar with a count of waiting requests).
 
-1. In [Google Cloud Console](https://console.cloud.google.com/), set up the **OAuth consent screen** (External; add yourself as a test user).
-2. Under **Credentials → Create credentials → OAuth client ID**, choose **Web application** and add the authorized redirect URI `http://localhost:4747/auth/google/callback`.
-3. Export the credentials before `npm start`:
+1. In [Google Cloud Console](https://console.cloud.google.com/), set up the **OAuth consent screen** (External). While it's in *Testing*, only listed test users can sign in at all, so **publish** it (Audience → Publish app) to let new people request access. RefShelf only asks for basic profile scopes, which don't need Google's verification.
+2. Under **Credentials → Create credentials → OAuth client ID**, choose **Web application** and add the authorized redirect URI `http://localhost:4747/auth/google/callback` (plus `$BASE_URL/auth/google/callback` for any other address you use).
+3. Export the credentials before `npm start` (or put them in `.env`):
 
 ```bash
 export GOOGLE_CLIENT_ID=....apps.googleusercontent.com
 export GOOGLE_CLIENT_SECRET=...
-export ALLOWED_EMAILS=you@gmail.com,colleague@gmail.com
+export ADMIN_EMAILS=you@gmail.com            # comma-separated; ALLOWED_EMAILS is accepted as an older name
 ```
 
 | Variable | Purpose |
 |---|---|
 | `BASE_URL` | Public URL of the app if it isn't `http://localhost:4747` (the redirect URI is `$BASE_URL/auth/google/callback`; `https://` URLs also get `Secure` cookies) |
 | `SESSION_SECRET` | Key used to sign session cookies. If unset, a random one is generated and kept in `data/.session-secret`. Changing it signs everyone out |
-| `REFSHELF_NO_AUTH=1` | Run without sign-in (the old behaviour) |
+| `REFSHELF_NO_AUTH=1` | Run without sign-in: one shared `local` library, no sign-up |
 
-Sessions last 30 days. Removing an email from `ALLOWED_EMAILS` and restarting revokes it immediately.
+Sessions last 30 days. Approval status is checked on every request, so approving someone lets them in within seconds (the waiting page checks automatically), and declining or revoking signs them out immediately. Declined users can be approved later from the Users page; their references are kept either way.
 
 ### Per-user libraries
 
 Each signed-in user has their own library: references, PDFs, summaries, cite keys and exports are private to them, and the same paper can be in several people's libraries. Other users' references return 404. With `REFSHELF_NO_AUTH=1`, everything belongs to a single `local` library.
 
-References created before per-user libraries existed are assigned on startup to the first email in `ALLOWED_EMAILS` (or to `local` without sign-in).
+References created before per-user libraries existed are assigned on startup to the first email in `ADMIN_EMAILS` (or to `local` without sign-in).
+
+Every approved user can generate Claude summaries, which are billed to the server's `ANTHROPIC_API_KEY`.
 
 ## Access from other devices
 
-Google only allows `http://` sign-in redirects for `localhost`, so other devices need an `https://` address on a real domain. `Caddyfile` sets this up with a domain on Cloudflare; the app itself stays on `127.0.0.1` behind Caddy.
+Google only allows `http://` sign-in redirects for `localhost`, so other devices need an `https://` address on a real domain. The app itself stays on `127.0.0.1`; something in front of it provides HTTPS.
+
+### Tailscale (private: devices on your tailnet, from anywhere)
+
+1. In the [Tailscale admin console](https://login.tailscale.com/admin/dns), make sure **MagicDNS** is on and enable **HTTPS Certificates**.
+2. Run `tailscale serve --bg 4747`. It prints the address, e.g. `https://your-mac.tailnet-name.ts.net`, and keeps serving across restarts (`tailscale serve reset` turns it off).
+3. Set `BASE_URL=https://your-mac.tailnet-name.ts.net` in `.env`, add `https://your-mac.tailnet-name.ts.net/auth/google/callback` as an authorized redirect URI in Google Cloud Console, and restart `npm start`.
+4. Install Tailscale on each device that should reach RefShelf and sign in to the same tailnet (or [share the machine](https://tailscale.com/kb/1084/sharing) with other people's tailnets). Use the `https://…ts.net` address everywhere, including on this machine.
+
+### Your own domain on Cloudflare (any device on the LAN, no app to install)
+
+`Caddyfile` puts Caddy in front of the app with a Let's Encrypt certificate obtained through Cloudflare's DNS API.
 
 1. In Cloudflare DNS, add an **A** record `refshelf` → this machine's LAN IP (e.g. `192.168.1.242`) with the proxy **off** (grey cloud, "DNS only"). Reserve that IP for the machine in your router.
 2. Create a Cloudflare API token with **Zone → DNS → Edit** for the domain.
@@ -79,6 +92,6 @@ lib/metadata.js    DOI / arXiv / URL resolution, PDF discovery
 lib/pdf.js         PDF text extraction (pdf.js)
 lib/cite.js        BibTeX, RIS, APA, MLA formatting + cite keys
 lib/summarize.js   Claude summaries
-lib/auth.js        Google sign-in and session gate
-public/            Frontend (vanilla JS, no build step)
+lib/auth.js        Google sign-in, sign-up approval, session gate
+public/            Frontend (vanilla JS, no build step); admin.html = Users page
 ```

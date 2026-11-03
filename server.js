@@ -30,13 +30,13 @@ if (process.env.REFSHELF_NO_AUTH === "1") {
   legacyOwner = LOCAL_OWNER;
 } else {
   try {
-    legacyOwner = setupAuth(app, { baseUrl }).allowed[0];
+    legacyOwner = setupAuth(app, { baseUrl }).admins[0];
   } catch (err) {
     console.error(err.message);
     process.exit(1);
   }
 }
-// References from before per-user libraries go to the first allowed user (or "local").
+// References from before per-user libraries go to the first admin (or "local").
 const claimed = db.claimUnowned(legacyOwner);
 if (claimed) console.log(`Assigned ${claimed} existing reference(s) to ${legacyOwner}`);
 app.use(express.static("public"));
